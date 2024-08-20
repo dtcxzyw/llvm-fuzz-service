@@ -4,8 +4,8 @@ shopt -s inherit_errexit
 
 echo "LLVM_REVISION=$(git -C llvm-project rev-parse HEAD)" >> $GITHUB_ENV
 
-COMMIT_URL=$GITHUB_PATCH_ID
-PATCH_URL=$GITHUB_PATCH_ID.diff
+COMMIT_URL=$(echo $GITHUB_PATCH_ID | tr -d '\r\n')
+PATCH_URL=$COMMIT_URL.diff
 
 echo "Downloading patch $PATCH_URL..."
 wget $PATCH_URL -O patch.diff
