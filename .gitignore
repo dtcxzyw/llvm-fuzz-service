@@ -1,0 +1,5 @@
+llvm-build
+CHANGELOGS
+*.log
+.vscode
+patch.diff

@@ -1,0 +1,58 @@
+name: Pre-commit Fuzzing
+
+on:
+  issues:
+    types: labeled
+
+jobs:
+  build:
+    if: github.event.label.name == 'fuzz'
+    runs-on: self-hosted
+
+    permissions:
+      issues: write
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Set up Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git -C llvm-project checkout .
+          git -C llvm-project clean -fdx
+
+      - name: Set up patch
+        run: |
+          ${{ github.workspace }}/setup_pre_commit_patch.sh
+        env:
+          GITHUB_PATCH_ID: ${{ github.event.issue.body }}
+
+      - name: Build LLVM
+        run: ${{ github.workspace }}/build.sh
+
+      - name: Run Fuzzing
+        id: fuzz
+        run: ${{ github.workspace }}/fuzz.sh
+
+      - name: Report
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          filePath: issue.md
+
+      - name: Artifact
+        uses: actions/upload-artifact@v4
+        if: steps.fuzz.outputs.SHOULD_UPLOAD_ARTIFACT == '1'
+        id: artifact
+        with:
+          name: seeds
+          path: csmith_work
+
+      - name: Append artifact url
+        if: steps.fuzz.outputs.SHOULD_UPLOAD_ARTIFACT == '1'
+        run: |
+          echo "Artifact: ${{ steps.artifact.outputs.artifact_url }}" >> issue.md
