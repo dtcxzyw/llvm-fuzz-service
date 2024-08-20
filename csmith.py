@@ -9,17 +9,18 @@ import time
 
 start = time.time()
 test_mode = os.environ["FUZZ_MODE"]
+baseline = 80000 # tests/hour
 test_count_map = {
-    "fuzz6m": 10000,
-    "fuzz": 100000,
-    "fuzz2h": 200000,
-    "fuzz4h": 400000,
-    "fuzz6h": 600000,
-    "fuzz8h": 800000,
-    "fuzz10h": 1000000,
-    "fuzz12h": 1200000,
-    "fuzz14h": 1400000,
-    "fuzz16h": 1600000,
+    "quickfuzz": 10000,
+    "fuzz": baseline,
+    "fuzz2h": baseline * 2,
+    "fuzz4h": baseline * 4,
+    "fuzz6h": baseline * 6,
+    "fuzz8h": baseline * 8,
+    "fuzz10h": baseline * 10,
+    "fuzz12h": baseline * 12,
+    "fuzz14h": baseline * 14,
+    "fuzz16h": baseline * 16,
 }
 if test_mode not in test_count_map:
     print("Invalid FUZZ_MODE {}".format(test_mode))
