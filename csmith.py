@@ -114,9 +114,9 @@ progress.close()
 end = time.time()
 
 with open("issue.md", "w") as f:
-    f.write("Baseline: https://github.com/llvm/llvm-project/commit/{}\n", os.environ["LLVM_REVISION"])
-    f.write("Patch URL: {}\n", os.environ["COMMIT_URL"])
-    f.write("Patch SHA256: {}\n", os.environ["PATCH_SHA256"])
+    f.write("Baseline: https://github.com/llvm/llvm-project/commit/{}\n".format(os.environ["LLVM_REVISION"]))
+    f.write("Patch URL: {}\n".format(os.environ["COMMIT_URL"]))
+    f.write("Patch SHA256: {}\n".format(os.environ["PATCH_SHA256"]))
     f.write("Total: {} Failed: {} Skipped: {}\n".format(test_count, error_count, skipped_count))
     f.write("Time: {}".format(time.strftime("%H:%M:%S", time.gmtime(end-start))))
 
