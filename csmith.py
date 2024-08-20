@@ -8,7 +8,23 @@ import shutil
 import time
 
 start = time.time()
-test_count = 100000
+test_mode = os.environ["FUZZ_MODE"]
+test_count_map = {
+    "fuzz6m": 10000,
+    "fuzz": 100000,
+    "fuzz2h": 200000,
+    "fuzz4h": 400000,
+    "fuzz6h": 600000,
+    "fuzz8h": 800000,
+    "fuzz10h": 1000000,
+    "fuzz12h": 1200000,
+    "fuzz14h": 1400000,
+    "fuzz16h": 1600000,
+}
+if test_mode not in test_count_map:
+    print("Invalid FUZZ_MODE {}".format(test_mode))
+    exit(0)
+test_count = test_count_map[test_mode]
 csmith_dir = "/data/zyw/csmith-install"
 csmith_ext = ""
 csmith_command = csmith_dir +"/bin/csmith --max-array-dim 2 --max-array-len-per-dim 4 --max-struct-fields 4 --concise --quiet --builtins --no-packed-struct --no-unions --no-bitfields --no-volatiles --no-volatile-pointers {}--output ".format(
@@ -117,6 +133,7 @@ with open("issue.md", "w") as f:
     f.write("Baseline: https://github.com/llvm/llvm-project/commit/{}\n".format(os.environ["LLVM_REVISION"]))
     f.write("Patch URL: {}\n".format(os.environ["COMMIT_URL"]))
     f.write("Patch SHA256: {}\n".format(os.environ["PATCH_SHA256"]))
+    f.write("Fuzz mode: {}\n".format(test_mode))
     f.write("Total: {} Failed: {} Skipped: {}\n".format(test_count, error_count, skipped_count))
     f.write("Time: {}".format(time.strftime("%H:%M:%S", time.gmtime(end-start))))
 

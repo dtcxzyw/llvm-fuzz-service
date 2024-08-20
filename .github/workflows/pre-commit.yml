@@ -6,7 +6,7 @@ on:
 
 jobs:
   build:
-    if: github.event.label.name == 'fuzz'
+    if: contains(github.event.label.name, 'fuzz')
     runs-on: self-hosted
     timeout-minutes: 1200
 
@@ -39,6 +39,8 @@ jobs:
       - name: Run Fuzzing
         id: fuzz
         run: ${{ github.workspace }}/fuzz.sh
+        env:
+          FUZZ_MODE: ${{ github.event.label.name }}
 
       - name: Report
         uses: thollander/actions-comment-pull-request@v2
