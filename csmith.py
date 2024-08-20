@@ -8,7 +8,7 @@ import shutil
 import time
 
 start = time.time()
-test_count = 1000
+test_count = 100000
 csmith_dir = "/data/zyw/csmith-install"
 csmith_ext = ""
 csmith_command = csmith_dir +"/bin/csmith --max-array-dim 2 --max-array-len-per-dim 4 --max-struct-fields 4 --concise --quiet --builtins --no-packed-struct --no-unions --no-bitfields --no-volatiles --no-volatile-pointers {}--output ".format(
