@@ -3,3 +3,4 @@ CHANGELOGS
 *.log
 .vscode
 patch.diff
+csmith_work
