@@ -42,11 +42,6 @@ jobs:
         env:
           FUZZ_MODE: ${{ github.event.label.name }}
 
-      - name: Report
-        uses: thollander/actions-comment-pull-request@v2
-        with:
-          filePath: issue.md
-
       - name: Artifact
         uses: actions/upload-artifact@v4
         if: steps.fuzz.outputs.SHOULD_UPLOAD_ARTIFACT == '1'
@@ -59,3 +54,8 @@ jobs:
         if: steps.fuzz.outputs.SHOULD_UPLOAD_ARTIFACT == '1'
         run: |
           echo "Artifact: ${{ steps.artifact.outputs.artifact_url }}" >> issue.md
+
+      - name: Report
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          filePath: issue.md
