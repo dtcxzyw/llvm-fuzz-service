@@ -136,6 +136,6 @@ with open("issue.md", "w") as f:
     f.write("Patch SHA256: {}\n".format(os.environ["PATCH_SHA256"]))
     f.write("Fuzz mode: {}\n".format(test_mode))
     f.write("Total: {} Failed: {} Skipped: {}\n".format(test_count, error_count, skipped_count))
-    f.write("Time: {}".format(time.strftime("%H:%M:%S", time.gmtime(end-start))))
+    f.write("Time: {}\n".format(time.strftime("%H:%M:%S", time.gmtime(end-start))))
 
 exit(1 if error_count != 0 else 0)

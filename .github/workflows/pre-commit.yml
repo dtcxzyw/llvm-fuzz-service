@@ -53,7 +53,9 @@ jobs:
       - name: Append artifact url
         if: steps.fuzz.outputs.SHOULD_UPLOAD_ARTIFACT == '1'
         run: |
-          echo "Artifact: ${{ steps.artifact.outputs.artifact_url }}" >> issue.md
+          echo "Artifact: $ARTIFACT_URL" >> issue.md
+        env:
+          ARTIFACT_URL: ${{ steps.artifact.outputs.artifact_url }}
 
       - name: Report
         uses: thollander/actions-comment-pull-request@v2
