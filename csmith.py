@@ -30,7 +30,7 @@ csmith_dir = "/data/zyw/csmith-install"
 csmith_ext = ""
 csmith_command = csmith_dir +"/bin/csmith --max-array-dim 2 --max-array-len-per-dim 4 --max-struct-fields 4 --concise --quiet --builtins --no-packed-struct --no-unions --no-bitfields --no-volatiles --no-volatile-pointers {}--output ".format(
     csmith_ext)
-common_opts = "-Wno-narrowing -DNDEBUG -g0 -ffp-contract=on -w -mllvm -inline-threshold=100000 -I" + csmith_dir + "/include "
+common_opts = "-Wno-narrowing -DNDEBUG -g0 -ffp-contract=on -w -mllvm -no-stack-coloring -mllvm -inline-threshold=100000 -I" + csmith_dir + "/include "
 gcc_command = "./llvm-build/bin/clang -O0 " + common_opts
 clang_command = "./llvm-build/bin/clang " + common_opts
 clang_arch_list = [
