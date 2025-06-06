@@ -113,7 +113,7 @@ if os.path.exists(cwd):
 os.makedirs(cwd)
 
 L = list(range(test_count))
-progress = tqdm.tqdm(L, ncols=70, miniters=100)
+progress = tqdm.tqdm(L, ncols=70, miniters=100, mininterval=60.0)
 error_count = 0
 skipped_count = 0
 
