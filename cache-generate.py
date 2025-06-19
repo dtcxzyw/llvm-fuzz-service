@@ -9,13 +9,17 @@ import sys
 csmith_dir = sys.argv[1]
 dst_dir = sys.argv[2]
 test_count = int(sys.argv[3])
-csmith_command = csmith_dir +"/bin/csmith --max-array-dim 2 --max-array-len-per-dim 4 --max-struct-fields 4 --concise --quiet --builtins --no-packed-struct --no-unions --no-bitfields --no-volatiles --no-volatile-pointers --output "
+csmith_command = (
+    csmith_dir
+    + "/bin/csmith --max-array-dim 2 --max-array-len-per-dim 4 --max-struct-fields 4 --concise --quiet --builtins --no-packed-struct --no-unions --no-bitfields --no-volatiles --no-volatile-pointers --output "
+)
+
 
 def csmith_test(i):
-    basename = dst_dir+"/test"+str(i)
+    basename = dst_dir + "/test" + str(i)
     file_c = basename + ".c"
     try:
-        subprocess.check_call((csmith_command+file_c).split(' '))
+        subprocess.check_call((csmith_command + file_c).split(" "))
     except subprocess.SubprocessError:
         return
 
