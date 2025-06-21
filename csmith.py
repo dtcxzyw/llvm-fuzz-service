@@ -6,9 +6,12 @@ import tqdm
 import subprocess
 import shutil
 import time
+import random
 
 start = time.time()
 test_mode = os.environ["FUZZ_MODE"]
+corpus_dir = "/data/zyw/corpus"
+corpus_items = open(os.path.join(corpus_dir, "index.txt")).read().splitlines()
 baseline = 80000  # tests/hour
 test_count_map = {
     "quickfuzz": 10000,
@@ -39,8 +42,8 @@ common_opts = (
     + csmith_dir
     + "/include "
 )
-gcc_command = "./llvm-build/bin/clang -O0 " + common_opts
-clang_command = "./llvm-build/bin/clang " + common_opts
+gcc_command = "./llvm-build/bin/clang -x c -O0 " + common_opts
+clang_command = "./llvm-build/bin/clang -x c " + common_opts
 clang_arch_list = [
     ("O1", "-O1"),
     ("O3", "-O3"),
@@ -81,7 +84,7 @@ def build_and_run(arch, basename, file_c, ref_output):
             f.write(file_out)
         return False
 
-    if out == ref_output:
+    if ref_output in out.decode("utf-8"):
         os.remove(file_out)
         return True
     else:
@@ -90,39 +93,20 @@ def build_and_run(arch, basename, file_c, ref_output):
         return False
 
 
-def csmith_test(i):
-    basename = cwd + "/test" + str(i)
-    file_c = basename + ".c"
+def csmith_test(item: str):
+    basename = cwd + "/" + item
+    file_c = corpus_dir + "/" + item
     try:
         subprocess.check_call((csmith_command + file_c).split(" "))
     except subprocess.SubprocessError:
         return None
 
-    file_ref = basename + "_ref"
-    try:
-        subprocess.check_call(
-            (gcc_command + "-o " + file_ref + " " + file_c).split(" "),
-            timeout=comp_timeout,
-        )
-    except subprocess.SubprocessError:
-        os.remove(file_c)
-        return None
-
-    try:
-        ref_output = subprocess.check_output(file_ref, timeout=exec_timeout)
-    except subprocess.SubprocessError:
-        os.remove(file_c)
-        os.remove(file_ref)
-        return None
+    ref_output = item[item.find(".c.") + 3 :]
 
     result = True
     for arch in clang_arch_list:
         if not build_and_run(arch, basename, file_c, ref_output):
             result = False
-
-    if result:
-        os.remove(file_c)
-        os.remove(file_ref)
 
     return result
 
@@ -132,14 +116,14 @@ if os.path.exists(cwd):
     shutil.rmtree(cwd)
 os.makedirs(cwd)
 
-L = list(range(test_count))
-progress = tqdm.tqdm(L, ncols=70, miniters=100, mininterval=60.0)
+tasks = random.sample(corpus_items, test_count)
+progress = tqdm.tqdm(tasks, ncols=70, miniters=100, mininterval=60.0)
 error_count = 0
 skipped_count = 0
 
 pool = Pool(processes=os.cpu_count())
 
-for res in pool.imap_unordered(csmith_test, L):
+for res in pool.imap_unordered(csmith_test, tasks):
     if res is not None:
         error_count += 0 if res else 1
     else:
