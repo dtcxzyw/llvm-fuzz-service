@@ -46,6 +46,10 @@ exec_qemu_timeout = 5.0
 comp_timeout = 30.0
 cwd = None
 
+env = os.environ.copy()
+env["LLVM_DISABLE_CRASH_REPORT"] = "1"
+env["LLVM_DISABLE_SYMBOLIZATION"] = "1"
+
 
 def build_and_run(arch, basename, file_c, ref_output):
     config, additional_opt = arch
@@ -56,10 +60,7 @@ def build_and_run(arch, basename, file_c, ref_output):
         subprocess.check_call(
             comp_command.split(" "),
             timeout=comp_timeout * 10,
-            env={
-                "LLVM_DISABLE_CRASH_REPORT": "1",
-                "LLVM_DISABLE_SYMBOLIZATION": "1",
-            },
+            env=env,
         )
     except subprocess.SubprocessError:
         with open(file_out + "_comp.sh", "w") as f:
