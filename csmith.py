@@ -14,7 +14,7 @@ corpus_dir = "/data/zyw/corpus"
 corpus_items = open(os.path.join(corpus_dir, "index.txt")).read().splitlines()
 baseline = 80000  # tests/hour
 test_count_map = {
-    "quickfuzz": 100,
+    "quickfuzz": 10000,
     "fuzz": baseline,
     "fuzz2h": baseline * 2,
     "fuzz4h": baseline * 4,
