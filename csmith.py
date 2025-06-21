@@ -14,7 +14,7 @@ corpus_dir = "/data/zyw/corpus"
 corpus_items = open(os.path.join(corpus_dir, "index.txt")).read().splitlines()
 baseline = 80000  # tests/hour
 test_count_map = {
-    "quickfuzz": 10000,
+    "quickfuzz": 100,
     "fuzz": baseline,
     "fuzz2h": baseline * 2,
     "fuzz4h": baseline * 4,
@@ -30,13 +30,6 @@ if test_mode not in test_count_map:
     exit(0)
 test_count = test_count_map[test_mode]
 csmith_dir = "/data/zyw/csmith-install"
-csmith_ext = ""
-csmith_command = (
-    csmith_dir
-    + "/bin/csmith --max-array-dim 2 --max-array-len-per-dim 4 --max-struct-fields 4 --concise --quiet --builtins --no-packed-struct --no-unions --no-bitfields --no-volatiles --no-volatile-pointers {}--output ".format(
-        csmith_ext
-    )
-)
 common_opts = (
     "-Wno-narrowing -DNDEBUG -g0 -ffp-contract=on -w -mllvm -no-stack-coloring -mllvm -inline-threshold=100000 -I"
     + csmith_dir
@@ -96,11 +89,6 @@ def build_and_run(arch, basename, file_c, ref_output):
 def csmith_test(item: str):
     basename = cwd + "/" + item
     file_c = corpus_dir + "/" + item
-    try:
-        subprocess.check_call((csmith_command + file_c).split(" "))
-    except subprocess.SubprocessError:
-        return None
-
     ref_output = item[item.find(".c.") + 3 :]
 
     result = True
