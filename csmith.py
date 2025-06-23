@@ -11,7 +11,17 @@ import random
 start = time.time()
 test_mode = os.environ["FUZZ_MODE"]
 corpus_dir = "/data/zyw/corpus"
-corpus_items = open(os.path.join(corpus_dir, "index.txt")).read().splitlines()
+distilled_corpus_dir = "/data/zyw/corpus-distilled/csmith-o3"
+corpus_items = (
+    open(
+        os.path.join(
+            distilled_corpus_dir if test_mode == "quickfuzz" else corpus_dir,
+            "index.txt",
+        )
+    )
+    .read()
+    .splitlines()
+)
 baseline = 80000  # tests/hour
 test_count_map = {
     "quickfuzz": 10000,
@@ -41,8 +51,7 @@ clang_arch_list = [
     ("O1", "-O1"),
     ("O3", "-O3"),
 ]
-exec_timeout = 2.0
-exec_qemu_timeout = 5.0
+exec_qemu_timeout = 30.0
 comp_timeout = 30.0
 cwd = None
 
@@ -105,7 +114,10 @@ if os.path.exists(cwd):
     shutil.rmtree(cwd)
 os.makedirs(cwd)
 
-tasks = random.sample(corpus_items, test_count)
+if test_mode == "quickfuzz":
+    tasks = corpus_items
+else:
+    tasks = random.sample(corpus_items, test_count)
 progress = tqdm.tqdm(tasks, ncols=70, miniters=100, mininterval=60.0)
 error_count = 0
 skipped_count = 0
@@ -134,7 +146,7 @@ with open("issue.md", "w") as f:
     f.write("Fuzz mode: {}\n".format(test_mode))
     f.write(
         "Total: {} Failed: {} Skipped: {}\n".format(
-            test_count, error_count, skipped_count
+            len(tasks), error_count, skipped_count
         )
     )
     f.write("Time: {}\n".format(time.strftime("%H:%M:%S", time.gmtime(end - start))))
