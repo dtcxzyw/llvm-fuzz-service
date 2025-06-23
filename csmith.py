@@ -12,10 +12,11 @@ start = time.time()
 test_mode = os.environ["FUZZ_MODE"]
 corpus_dir = "/data/zyw/corpus"
 distilled_corpus_dir = "/data/zyw/corpus-distilled/csmith-o3"
+selected_corpus_dir = distilled_corpus_dir if test_mode == "quickfuzz" else corpus_dir
 corpus_items = (
     open(
         os.path.join(
-            distilled_corpus_dir if test_mode == "quickfuzz" else corpus_dir,
+            selected_corpus_dir,
             "index.txt",
         )
     )
@@ -98,7 +99,7 @@ def build_and_run(arch, basename, file_c, ref_output):
 
 def csmith_test(item: str):
     basename = cwd + "/" + item
-    file_c = corpus_dir + "/" + item
+    file_c = selected_corpus_dir + "/" + item
     ref_output = item[item.find(".c.") + 3 :]
 
     result = True
