@@ -75,6 +75,7 @@ def build_and_run(arch, basename, file_c, ref_output):
     except subprocess.SubprocessError:
         with open(file_out + "_comp.sh", "w") as f:
             f.write(comp_command)
+        shutil.copyfile(file_c, basename)
         return False
 
     try:
@@ -86,6 +87,7 @@ def build_and_run(arch, basename, file_c, ref_output):
     except subprocess.SubprocessError:
         with open(file_out + "_run.sh", "w") as f:
             f.write(file_out)
+        shutil.copyfile(file_c, basename)
         return False
 
     if ref_output in out.decode("utf-8"):
@@ -94,6 +96,7 @@ def build_and_run(arch, basename, file_c, ref_output):
     else:
         with open(file_out + "_run.sh", "w") as f:
             f.write(file_out)
+        shutil.copyfile(file_c, basename)
         return False
 
 
