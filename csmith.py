@@ -134,6 +134,8 @@ for res in pool.imap_unordered(csmith_test, tasks):
     else:
         skipped_count += 1
     progress.update(1)
+    if error_count != 0:
+        break
     # progress.set_description("Failed: {} Skipped: {}".format(error_count, skipped_count))
 progress.close()
 
