@@ -72,32 +72,37 @@ def build_and_run(arch, basename, file_c, ref_output):
             timeout=comp_timeout * 10,
             env=env,
         )
+    except subprocess.TimeoutExpired:
+        with open(file_out + "_comp.sh", "w") as f:
+            f.write(comp_command)
+        shutil.copyfile(file_c, basename)
+        return basename + " timeout"
     except subprocess.SubprocessError:
         with open(file_out + "_comp.sh", "w") as f:
             f.write(comp_command)
         shutil.copyfile(file_c, basename)
-        return False
+        return basename + " crash"
 
     try:
         out = subprocess.check_output([file_out], timeout=exec_qemu_timeout)
     except subprocess.TimeoutExpired:
         # ignore timeout
         os.remove(file_out)
-        return True
+        return None
     except subprocess.SubprocessError:
         with open(file_out + "_run.sh", "w") as f:
             f.write(file_out)
         shutil.copyfile(file_c, basename)
-        return False
+        return basename + " miscompilation"
 
     if ref_output in out.decode("utf-8"):
         os.remove(file_out)
-        return True
+        return None
     else:
         with open(file_out + "_run.sh", "w") as f:
             f.write(file_out)
         shutil.copyfile(file_c, basename)
-        return False
+        return basename + " miscompilation"
 
 
 def csmith_test(item: str):
@@ -105,12 +110,12 @@ def csmith_test(item: str):
     file_c = selected_corpus_dir + "/" + item
     ref_output = item[item.find(".c.") + 3 :]
 
-    result = True
     for arch in clang_arch_list:
-        if not build_and_run(arch, basename, file_c, ref_output):
-            result = False
+        ret = build_and_run(arch, basename, file_c, ref_output)
+        if ret is not None:
+            return ret
 
-    return result
+    return None
 
 
 cwd = "./csmith_work"
@@ -123,23 +128,25 @@ if test_mode == "quickfuzz":
 else:
     tasks = random.sample(corpus_items, test_count)
 progress = tqdm.tqdm(tasks, ncols=70, miniters=100, mininterval=60.0)
+test_log = ""
 error_count = 0
-skipped_count = 0
 
 pool = Pool(processes=os.cpu_count())
 
 for res in pool.imap_unordered(csmith_test, tasks):
     if res is not None:
-        error_count += 0 if res else 1
-    else:
-        skipped_count += 1
+        error_count += 1
+        test_log += res + "\n"
+        if "timeout" not in res:
+            break
     progress.update(1)
-    if error_count != 0:
-        break
-    # progress.set_description("Failed: {} Skipped: {}".format(error_count, skipped_count))
+
 progress.close()
 
 end = time.time()
+
+with open(cwd + "/test.log", "w") as f:
+    f.write(test_log)
 
 with open("issue.md", "w") as f:
     f.write(
@@ -150,11 +157,7 @@ with open("issue.md", "w") as f:
     f.write("Patch URL: {}\n".format(os.environ["COMMIT_URL"]))
     f.write("Patch SHA256: {}\n".format(os.environ["PATCH_SHA256"]))
     f.write("Fuzz mode: {}\n".format(test_mode))
-    f.write(
-        "Total: {} Failed: {} Skipped: {}\n".format(
-            len(tasks), error_count, skipped_count
-        )
-    )
+    f.write("Total: {} Failed: {}\n".format(len(tasks), error_count))
     f.write("Time: {}\n".format(time.strftime("%H:%M:%S", time.gmtime(end - start))))
 
 exit(1 if error_count != 0 else 0)
